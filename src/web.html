@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hearthstone card draw simulator</title>
+    <meta charset="UTF-8">
+</head>
+<body>
+<div>Hearthstone card draw simulator. (c) Peter van der Zee, Aug 2018, <a href="https://pvdz.ee">pvdz.ee</a></div>
+<hr>
+<div style="float: left; margin-right: 30px;">
+    Deck list<br>
+    Each line addss one card name<br>
+    <textarea rows="35" id="$deck_area"></textarea>
+</div>
+<div style="overflow: auto;">
+    <button onclick="load()" style="background-color: lightgreen; font-weight: bold;">Load</button>
+    <select id="$load_select"></select>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="opacity:0.5;">(
+    <button onclick="exp()">Export</button>
+    <button onclick="imp()">Import</button>
+    <input id="$impexp_field">
+    <button onclick="dump()">dump</button>
+    <button onclick="localStorage.removeItem('hearthstone_draw_sim.list')">clear</button>
+    )</span><br>
+    <div id="$config_panel">
+        <label>Experiment name: <input style="min-width: 600px" id="$exp_name" value="bricked spite">
+            <button onclick="save()" style="background-color: lightgreen; font-weight: bold;">Save</button>
+        </label><br>
+        <label>Experiment desc: <input style="min-width: 600px" id="$exp_desc"
+                                       value="odds of having spiteful bricked by turn 7 by having both uis in hand"></label><br>
+        <label>Stop after this many cards: <input id="$max_cards" value="7"> (after mulligan)</label><br>
+        <label><input id="$correct_for_coin" type="checkbox" checked> Stop one card earlier when on coin</label><br>
+        <label>Number of simulations: <input id="$sim_count" value="100000"></label><br>
+        Player to simulate:
+        <input type="radio" name="pradio" value="1" id="$pradio_1"> Starting
+        <input type="radio" name="pradio" value="2" id="$pradio_2"> Coin
+        <input type="radio" name="pradio" value="3" id="$pradio_3" checked> Both (runs 2x cycles!)
+    </div>
+    <br>
+    <button onclick="run()" style="background-color: lightgreen; font-size: 30px; font-weight: bold;">Run</button>
+    <hr>
+    Mulligan; for each card, discard when:
+    <div id="$mull_area"></div>
+    <hr>
+    Hit goal when:
+    <div id="$wincon_area"></div>
+    <hr>
+    <div id="$output_area" style="padding-top: 10px; white-space: pre; font-family: monospace;"></div>
+</div>
+
+<!--  :(  -->
+<script src="itt/eventer.js"></script>
+<script src="itt/core.js"></script>
+<script src="itt/add.js"></script>
+<script src="itt/card.js"></script>
+<script src="itt/custom.js"></script>
+<script src="itt/hand.js"></script>
+<script src="itt/logic.js"></script>
+<script src="itt/neg.js"></script>
+<script src="itt/noop.js"></script>
+<script src="itt/turn.js"></script>
+<script src="itt/player.js"></script>
+<script src="itt/itt.js"></script>
+<script src="print.js"></script>
+<script src="sim.js"></script>
+<script src="ui.js"></script>
+
+<script>
+  // This will prefill and load a preset if none are found in local storage
+  fillLoadSelect();
+  let global_mullItt, global_winconItt; // set by load()
+  load('bricked spite');
+
+  function run() {
+    // Split the deck in lines and scrub them. The deck is padded with zeroes.
+    let deck = $deck_area.value.split(/\n/g).map(s => s.trim()).filter(e => !!e);
+
+    // Test player 1, player 2, or both?
+    const players = document.querySelector('input[name="pradio"]:checked').value;
+    // How many cycles to run? This is per player. It's not super efficient, do 100k-1M tops.
+    const cycles = +$sim_count.value || 10;
+    // How many cards should we max draw after the mulligan before we stop?
+    const maxDraw = +$max_cards.value || 7;
+
+    $output_area.innerHTML = simulateHsDraws(deck, cycles, maxDraw, global_mullItt, global_winconItt, players, $correct_for_coin.checked);
+  }
+
+  // Take a deep breath!
+  setTimeout(run, 10);
+</script>
+</body>
+</html>
