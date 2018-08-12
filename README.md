@@ -8,3 +8,4 @@ Basically it's easier to simulate certain conditions than do the actual math bec
 
 I've added two examples for spiteful druid; In one it checks how often you actually have the summoner when you can play it. The other checks how often it's bricked before you can play it.
 
+See https://pvdz.ee/weblog/423 for details on the UI and some background info on the code.
